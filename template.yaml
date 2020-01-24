@@ -1,0 +1,184 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: Tks graphql test
+Parameters:
+  # SkusSourcePackage:
+  #   Type: String
+  #   Description: path to lambda fcn
+  ProductSourcePackage:
+    Type: String
+    Description: path to lambda fcn
+  # SchemaS3Path:
+  #   Type: String
+  #   Description: path to schema
+  Env:
+    Type: String
+    Description: Either Prod or Homol
+  EnvLowerCase:
+    Type: String
+    Description: Either prod or homol
+  DeployBucket:
+    Type: String
+    Description: The bucket where the lambda zip packages are stored
+    
+Resources:
+
+  LambdaIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: !Sub 'crc-ra-integration-lambda-${EnvLowerCase}'
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'cloudwatch:*'
+                  - 'logs:*'
+                Resource: '*'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: c46cf75f-2b49-495e-b13c-76645fa4b084
+      
+  AppsyncIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: appsync.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: !Sub 'allow-access-to-lambda-from-appsync-${EnvLowerCase}'
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'lambda:InvokeFunction'
+                Resource:
+                  - !Sub >-
+                    arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${ProductSource}
+                  # - !Sub >-
+                  #   arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${SkusSource}
+              # - Effect: Allow
+              #   Action:
+              #     - 'dynamodb:*'
+              #   Resource:
+              #     - !Sub '${RatingDataSource.Arn}'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: b42def1f-04f4-48c9-a088-34ce70c62853
+    
+  CatalogApi:
+    Type: 'AWS::AppSync::GraphQLApi'
+    Properties:
+      AuthenticationType: API_KEY
+      Name: tks-gql-test-catalog-api
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: c48e166e-45ec-4e40-91cc-ed6867746456
+
+  ProductSource:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Product Source For GraphQl
+      CodeUri: lambda
+      Handler: build/lambda/ProductSource/app.handler
+      Runtime: nodejs12.x #ou nodejs10.x?
+      Events:
+        ProductSource:
+          Type: Api
+          Properties:
+            Path: /product
+            Method: get
+      Role: !GetAtt LambdaIAMRole.Arn
+      Timeout: 10
+      MemorySize: 128
+  
+  ProductDataSource:
+    Type: 'AWS::AppSync::DataSource'
+    Properties:
+      ApiId: !Sub '${CatalogApi.ApiId}'
+      Description: tradutor do data source para o schema
+      LambdaConfig:
+        LambdaFunctionArn: !Sub '${ProductSource.Arn}'
+      Name: productsource
+      ServiceRoleArn: !Sub '${AppsyncIAMRole.Arn}'
+      Type: AWS_LAMBDA
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: f704c555-fe8a-4861-9937-b5faecc0c152
+
+  QueryGetProductResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !Sub ${CatalogApi.ApiId}
+      DataSourceName: !Sub ${ProductDataSource.Name}
+      FieldName: getProduct
+      Kind: UNIT
+      TypeName: Query
+      RequestMappingTemplate: |
+        {
+            "version" : "2017-02-28",
+            "operation": "Invoke",
+            "payload" : "{\"Id\": $ctx.args.Id}"
+        }
+      ResponseMappingTemplate: $utils.toJson($context.result)
+    DependsOn: GqlSchema
+  
+  GqlSchema:
+    Type: 'AWS::AppSync::GraphQLSchema'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 92aea938-b085-4a42-80dd-4557ff9dedbb
+    DependsOn:
+      - ProductSource
+    Properties:
+      ApiId: !Sub '${CatalogApi.ApiId}'
+      Definition: |
+        schema {
+          query: Query
+        }
+
+        type Categoria {
+          Categoria: String
+          Departamento: String!
+          Subcategoria: String
+        }
+
+        type Especificacao {
+          Observacao: String
+          Resumo: String
+        }
+
+        type Product {
+          Categoria: [Categoria]
+          Descricao: String
+          Id: Int!
+          Marca: String
+          Nome: String
+          Skus: [Sku]
+          Visivel: Boolean!
+        }
+
+        type Query {
+          getProduct(Id: Int!): Product
+        }
+
+        type Sku {
+          Especificacoes: Especificacao
+          Id: Int!
+          Nome: String
+        }

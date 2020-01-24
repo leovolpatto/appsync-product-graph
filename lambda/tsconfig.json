@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": false,
+    "alwaysStrict": true,
+    "baseUrl": ".",
+    "checkJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ES6",
+    "moduleResolution": "Node",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "./build/dist",
+    "paths": {
+      "~/*": ["./*"]
+    },
+    "rootDir": ".",
+    "strict": true,
+    "target": "ESNext",
+    "sourceMap": true
+  },
+  "include": [
+    "src/**/*", "types.d.ts"
+  ]
+}

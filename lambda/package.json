@@ -1,0 +1,119 @@
+{
+    "name": "catalog_api_test",
+    "version": "1.0.0",
+    "description": "catalog test sample",
+    "license": "UNLICENSED",
+    "scripts": {
+        "lint": "eslint  --ext .js,.ts src",
+        "lint-fix": "eslint  --ext .js,.ts src --fix",
+        "test": "yarn jest --coverage --runInBand",
+        "build": "rm -rf dist && webpack --mode production",
+        "watch": "webpack-cli src/lambda/ProductSource/app.ts -c webpack.config.js -o build/lambda/ProductSource/app.js -w",
+        "webpack": "webpack-cli src/lambda/ProductSource/app.ts -c webpack.config.js -o build/lambda/ProductSource/app.js"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.6.0",
+        "@babel/core": "^7.8.3",
+        "@babel/plugin-proposal-class-properties": "^7.5.5",
+        "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
+        "@babel/preset-env": "^7.8.3",
+        "@babel/preset-typescript": "^7.6.0",
+        "@types/aws-lambda": "^8.10.40",
+        "@types/jest": "^24.9.1",
+        "@types/node": "^12.7.5",
+        "@typescript-eslint/eslint-plugin": "^2.3.0",
+        "@typescript-eslint/parser": "^2.3.0",
+        "babel-loader": "^8.0.6",
+        "builtin-modules": "^3.1.0",
+        "eslint": "^6.4.0",
+        "eslint-config-prettier": "^6.3.0",
+        "eslint-plugin-prettier": "^3.1.1",
+        "jest": "^24.9.0",
+        "prettier": "^1.18.2",
+        "source-map-loader": "^0.2.4",
+        "ts-jest": "^24.3.0",
+        "ts-loader": "^6.2.1",
+        "typescript": "^3.7.5",
+        "webpack": "^4.41.5",
+        "webpack-cli": "^3.3.10",
+        "webpack-node-externals": "^1.7.2"
+    },
+    "dependencies": {
+        "@fnando/cnpj": "^0.1.1",
+        "@fnando/cpf": "^0.1.1",
+        "@types/uuid": "^3.4.5",
+        "aws-sdk": "^2.533.0",
+        "axios": "^0.19.0",
+        "source-map-support": "^0.5.16",
+        "uuid": "^3.3.3"
+    },
+    "babel": {
+        "presets": [
+            [
+                "@babel/env",
+                {
+                    "targets": {
+                        "node": "10.16.3"
+                    },
+                    "modules": false
+                }
+            ],
+            "@babel/typescript"
+        ],
+        "plugins": [
+            "@babel/proposal-class-properties",
+            "@babel/proposal-object-rest-spread"
+        ]
+    },
+    "jest": {
+        "setupFilesAfterEnv": [
+            "./jest.setup.js"
+        ],
+        "verbose": true,
+        "roots": [
+            "<rootDir>/src"
+        ],
+        "transform": {
+            "^.+\\.tsx?$": "ts-jest"
+        },
+        "testRegex": "(/test/.*|(\\.|/)(test|spec))\\.[jt]sx?$",
+        "modulePaths": [
+            "<rootDir>"
+        ],
+        "moduleDirectories": [
+            "node_modules"
+        ],
+        "moduleNameMapper": {
+            "~(.*)$": "<rootDir>$1"
+        }
+    },
+    "eslintConfig": {
+        "parser": "@typescript-eslint/parser",
+        "extends": [
+            "plugin:@typescript-eslint/recommended",
+            "prettier/@typescript-eslint",
+            "plugin:prettier/recommended"
+        ],
+        "parserOptions": {
+            "ecmaVersion": 2018,
+            "sourceType": "module"
+        },
+        "rules": {
+            "@typescript-eslint/no-use-before-define": [
+                "error",
+                {
+                    "functions": false
+                }
+            ],
+            "@typescript-eslint/camelcase": "off",
+            "@typescript-eslint/ban-ts-ignore": "off"
+        }
+    },
+    "prettier": {
+        "semi": true,
+        "trailingComma": "all",
+        "singleQuote": true,
+        "printWidth": 120,
+        "tabWidth": 2
+    }
+}

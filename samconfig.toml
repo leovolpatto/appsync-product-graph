@@ -1,0 +1,17 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "tks-graphql-test"
+s3_bucket = "tok-sam-tmp-deploy"
+s3_prefix = "tks-graphql-test"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = [
+  'Env="Homol"',
+  'EnvLowerCase="homol"',
+  'ProductSourcePackage=".aws-sam/build/ProductSource/build"',
+  'SkusSourcePackage=".aws-sam/build/SkusSource/build"',
+  'DeployBucket="tok-sam-tmp-deploy"'
+]
