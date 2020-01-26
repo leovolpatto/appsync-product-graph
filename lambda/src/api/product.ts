@@ -26,8 +26,8 @@ export async function getSkus(page: number, pageSize: number) {
     const response = await axios({
         url: `https://tokstok.vtexcommercestable.com.br/api/catalog_system/pvt/sku/stockkeepingunitids?page=${page}&pagesize=${pageSize}`,
         headers: {
-            'x-vtex-api-appToken': 'RMHXHAXJXLACKLNKYRAGENBXHOWLCZMVFXOMKYFUJJEWNMWTYPGVVBWELJQSDLHXZEWNWAAZLFWVIEKVRDNMTQADAKBAIMQYBGWIPJXXPGKPFAVGZVBAYUEJDSMLZARZ',
-            'x-vtex-api-appKey': 'vtexappkey-tokstok-TCYTIY'
+            'x-vtex-api-appToken': '***',
+            'x-vtex-api-appKey': '***'
         }
     });
     return response.data;
